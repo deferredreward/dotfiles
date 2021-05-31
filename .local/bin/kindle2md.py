@@ -75,7 +75,7 @@ output = f'# {book_title}\n\n'
 if len(citation) > 1: 
     citeItems = [str(elem) for elem in citation]
     citeItems[0] = citeItems[0].lstrip()
-    citeItems[-1] = citeItems[0].rstrip()
+    citeItems[-1] = citeItems[-1].rstrip()
     for elem in citeItems:
         elem = elem.replace('<i>','*')
         elem = elem.replace('</i>','*')
