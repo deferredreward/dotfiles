@@ -50,6 +50,8 @@ try:
     text_elements = soup.select('.noteText')
     all_text_elements = soup.select('.noteText,.sectionHeading')
     desc_elements = soup.select('.noteHeading')
+    authors = soup.select_one('.authors').contents[0].strip() 
+    citation = soup.select_one('.citation').contents
 
     texts = [elem.contents[0].strip() for elem in text_elements]
     all_texts = [elem.contents[0].strip() for elem in all_text_elements]
@@ -70,21 +72,48 @@ except AttributeError as e:
     exit(1)
 
 output = f'# {book_title}\n\n'
+if len(citation) > 1: 
+    citeItems = [str(elem) for elem in citation]
+    citeItems[0] = citeItems[0].lstrip()
+    citeItems[-1] = citeItems[0].rstrip()
+    for elem in citeItems:
+        elem = elem.replace('<i>','*')
+        elem = elem.replace('</i>','*')
+        elem = elem.replace('<em>','*')
+        elem = elem.replace('</em>','*')        
+        output += f'{elem}'
+    output += '\n\n'
+
 ai = 0
+desc_i = 0
 for i in range(len(texts)):
     if not texts[i] == all_texts[ai]:      
         output += f'## {all_texts[ai]}\n\n'
         ai+=1
-        # I have no idea why this is backwards of what I'd expect, it seems the truthiness is inverse of my expectation
-    if not types[i].find("Note"): 
+    if types[desc_i].find("Bookmark") != -1: 
+        output += f'*Bookmark* @{pages[desc_i]}\n'
+        output += '\n'    
+        desc_i +=1
+    if types[i].find("Note") != -1: 
         output += f'\t> {texts[i]}\n' # blockquote my notes
-        output += f'\t{types[i]} @ {pages[i]}\n'
+        output += f'\t{types[desc_i]}@{pages[desc_i]}\n'
         output += '\n'
-    else:
-        output += f'- {texts[i]}\n'
-        output += f'\t{types[i]} @ {pages[i]}\n'
-        output += '\n'
+        
+    else:        
+        if types[desc_i].find("yellow") != -1:
+            output += f'- {texts[i]} ({authors} @{pages[desc_i]})\n\n'
+        elif types[desc_i].find("pink") != -1:
+            output += f'- [[Disagreement]] {texts[i]} ({authors} @{pages[desc_i]})\n\n'
+        elif types[desc_i].find("blue") != -1:
+            output += f'- [[Important]] {texts[i]} ({authors} @{pages[desc_i]})\n\n'
+        elif types[desc_i].find("orange") != -1:
+            output += f'- [[Idea]] {texts[i]} ({authors} @{pages[desc_i]})\n\n'              
+
+
+        # output += f'\t{types[desc_i]}@{pages[desc_i]}\n'
+        # output += '\n'
     ai+=1
+    desc_i +=1
 
 try:
     dest.write_text(output, encoding='UTF-8')
