@@ -88,7 +88,7 @@ ai = 0
 desc_i = 0
 for i in range(len(texts)):
     if not texts[i] == all_texts[ai]:      
-        output += f'## {all_texts[ai]}\n\n'
+        output += f'**{all_texts[ai]}**\n\n'
         ai+=1
     if types[desc_i].find("Bookmark") != -1: 
         output += f'*Bookmark* @{pages[desc_i]}\n'
